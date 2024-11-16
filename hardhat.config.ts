@@ -49,7 +49,7 @@ const config: HardhatUserConfig = {
   //     // optional. Ignored for compilerSource "docker". Can be used if compiler is located in a specific folder
   //     compilerPath: process.env.ZK_SOLC_COMPILER_PATH,
   //     libraries: {}, // optional. References to non-inlinable libraries
-  //     isSystem: false, // optional.  Enables Yul instructions available only for zkSync system contracts and libraries
+  //     isSystem: false, // optional.  Enables Yul instructions available only for zkSync system src and libraries
   //     forceEvmla: false, // optional. Falls back to EVM legacy assembly if there is a bug with Yul
   //     optimizer: {
   //       enabled: true, // optional. True by default
@@ -135,7 +135,7 @@ const config: HardhatUserConfig = {
     }),
   },
   paths: {
-    sources: "./contracts",
+    sources: "./src",
     cache: "./cache_hardhat",
   },
 };

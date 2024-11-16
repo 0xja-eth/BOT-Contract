@@ -1,16 +1,23 @@
 [profile.default]
 src = "src"
 out = "out"
-libs = ["lib"]
-
+libs = ["lib", "dependencies"]
 remappings = ["@openzeppelin/=lib/openzeppelin-contracts/"]
-
 via_ir = true
 
 [rpc_endpoints]
 testnet = "${TESTNET_RPC_URL}"
+fs_permissions = [{ access = "read", path = "./testdata"}]
 
-#[etherscan]
-#testnet = { key = "${ETHERSCAN_API_KEY}" }
+[dependencies]
+"@openzeppelin-contracts" = "5.0.1"
+forge-std = "1.9.2"
+risc0-ethereum = { version = "1.0.0", url = "https://github.com/vlayer-xyz/risc0-ethereum/releases/download/v1.0.0-soldeer-no-remappings/contracts.zip" }
+vlayer = "0.1.0-nightly-20241115-70dfc11"
 
-# See more config options https://github.com/foundry-rs/foundry/tree/master/config
+[soldeer]
+# whether soldeer manages remappings
+remappings_generate = false
+# whether soldeer re-generates all remappings when installing, updating or uninstalling deps
+remappings_regenerate = false
+

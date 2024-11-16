@@ -43,3 +43,4 @@ backend-new
 twmp
 
 .idea
+**/dependencies/

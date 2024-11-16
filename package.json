@@ -3,13 +3,17 @@
   "scripts": {
     "compile": "npx hardhat compile",
     "test": "npx hardhat test",
-
-    "flat": "npx hardhat flatten contracts/Trip.sol > temp/flattened/LazyBet.sol",
-    "flat-factory": "npx hardhat flatten contracts/LazyBetFactory.sol > temp/flattened/LazyBetFactory.sol",
-
+    "flat": "npx hardhat flatten src/BOTPlatform.sol > temp/flattened/LazyBet.sol",
+    "flat-factory": "npx hardhat flatten src/LazyBetFactory.sol > temp/flattened/LazyBetFactory.sol",
     "deploy": "npx hardhat run scripts/deploy.ts --no-compile"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.27.7",
+    "@types/bun": "latest",
+    "abitype": "^1.0.6",
+    "vitest": "^2.1.1",
+    "vitest-fetch-mock": "^0.4.1",
+
     "@matterlabs/hardhat-zksync-solc": "^0.3.17",
     "@matterlabs/hardhat-zksync-toolbox": "^0.1.1",
     "@matterlabs/hardhat-zksync-verify": "^0.1.7",
@@ -43,15 +47,16 @@
   },
   "dependencies": {
     "@api3/contracts": "^0.10.0",
-    "@matterlabs/signature-checker": "^1.1.1",
     "@matterlabs/hardhat-zksync-chai-matchers": "^0.1.3",
     "@matterlabs/hardhat-zksync-deploy": "^0.6.3",
+    "@matterlabs/signature-checker": "^1.1.1",
     "@nomiclabs/hardhat-ethers": "^2.2.3",
     "@nomiclabs/hardhat-waffle": "^2.0.6",
     "@openzeppelin/contracts": "^5.0.2",
     "@pythnetwork/pyth-evm-js": "^1.17.0",
     "@pythnetwork/pyth-sdk-solidity": "^2.2.1",
     "@uniswap/lib": "^4.0.1-alpha",
+    "@vlayer/sdk": "^0.1.0-nightly-20241115-70dfc11",
     "bitcoinjs-lib": "^6.1.5",
     "dotenv": "^16.3.1",
     "ecpair": "^2.1.0",
