@@ -9,7 +9,8 @@
     "createTrip": "npx hardhat run scripts/createTrip.ts --no-compile",
     "deposit": "npx hardhat run scripts/deposit.ts --no-compile",
     "setupVerifier": "npx hardhat run scripts/setupVerifier.ts --no-compile",
-    "verifyEmail": "npx hardhat run scripts/verifyEmail.ts --no-compile"
+    "verifyEmail": "npx hardhat run scripts/verifyEmail.ts --no-compile",
+    "info": "npx hardhat run scripts/info.ts --no-compile"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.7",

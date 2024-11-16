@@ -46,6 +46,7 @@ contract BOTPlatform is ReentrancyGuard, Ownable {
   Tier[] public tiers;
 
   mapping(string => Trip) public trips; // Trip ID -> Trip
+//  string[] public tripIds;
 
   mapping(address => string) public currentTrips; // User -> Trip ID
   mapping(string => address) public emails; // Email -> Address
@@ -121,7 +122,7 @@ contract BOTPlatform is ReentrancyGuard, Ownable {
     require(trips[_tripId].estEndTime == 0, "Estimated end time already set");
 
     require(_estEndTime > trips[_tripId].startTime, "Invalid estimated end time");
-    require(_estEndTime > block.timestamp, "Invalid estimated end time");
+//    require(_estEndTime > block.timestamp, "Invalid estimated end time");
 
     trips[_tripId].estEndTime = _estEndTime;
   }
