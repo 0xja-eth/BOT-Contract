@@ -253,10 +253,10 @@ export async function sendTx(
       }
     }
   } else {
-    // TEMP console.info(`Sending ${label}...`)
+    console.info(`Sending ${label}...`)
     const res = await txPromise;
     await res.wait(confirmations)
-    // TEMP console.info(`... Sent! ${res.hash}`)
+    console.info(`... Sent! ${res.hash}`)
     return res
   }
 }

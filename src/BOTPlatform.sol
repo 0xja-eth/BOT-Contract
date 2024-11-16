@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
-import "./lib/@openzeppelin/contracts/token/ERC20/IERC20.sol";
+//import "./lib/@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./lib/@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./lib/@openzeppelin/contracts/access/Ownable.sol";
+
+import {IKAP20} from "./KAP20.sol";
 
 enum TripStatus { Pending, Completed, Cancelled }
 
@@ -95,7 +97,7 @@ contract BOTPlatform is ReentrancyGuard, Ownable {
     require(trips[_tripId].initiator == address(0), "Trip already started");
     require(_value >= MIN_PAY_VALUE && _value <= MAX_PAY_VALUE, "Invalid value");
 
-    IERC20(token).transferFrom(msg.sender, address(this), _value);
+    IKAP20(token).transferFrom(msg.sender, address(this), _value);
 
     trips[_tripId] = Trip({
       initiator: msg.sender,
@@ -168,10 +170,10 @@ contract BOTPlatform is ReentrancyGuard, Ownable {
 
     claimable[msg.sender] = 0;
 
-    IERC20(token).transfer(msg.sender, claimable[msg.sender]);
+    IKAP20(token).transfer(msg.sender, claimable[msg.sender]);
   }
 
   function withdraw(address receiver) public onlyOwner {
-    IERC20(token).transfer(receiver, IERC20(token).balanceOf(address(this)));
+    IKAP20(token).transfer(receiver, IKAP20(token).balanceOf(address(this)));
   }
 }
