@@ -21,11 +21,11 @@ export async function deploy(hre: HardhatRuntimeEnvironment) {
   ])
   const [platform] = await makeContract("BOTPlatform");
 
-  await sendTx(token.mint(address, parseUnits("1000000", 6)), "mint");
-  await sendTx(token.mint("0xdE729290Fa6F72Dc9B802bB7CF12dad3f095da8d", parseUnits("1000000", 6)), "mint");
+  // await sendTx(token.mint(address, parseUnits("1000000", 6)), "mint");
+  // await sendTx(token.mint("0xdE729290Fa6F72Dc9B802bB7CF12dad3f095da8d", parseUnits("1000000", 6)), "mint");
 
-  // await sendTx(platform.changeToken(token.address), "changeToken");
-  // await sendTx(platform.changeEstimator(address), "changeEstimator");
+  await sendTx(platform.changeToken(token.address), "changeToken");
+  await sendTx(platform.changeEstimator(address), "changeEstimator");
 
   await sendTx(token.transfer(platform.address, parseUnits("10000", 6)), "transfer");
 }

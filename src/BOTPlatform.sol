@@ -32,8 +32,8 @@ contract BOTPlatform is ReentrancyGuard, Ownable {
   uint256 constant public FEE_FACTOR = 10000;
   uint256 constant public MAX_DELAY = 99999;
 
-  uint256 constant public MIN_PAY_VALUE = 1 ether;
-  uint256 constant public MAX_PAY_VALUE = 30 ether;
+  uint256 constant public MIN_PAY_VALUE = 1;
+  uint256 constant public MAX_PAY_VALUE = 30;
 
   uint256 constant public INVALID_THRESHOLD = 10 minutes;
 
@@ -94,8 +94,11 @@ contract BOTPlatform is ReentrancyGuard, Ownable {
   function startTrip(
     string memory _tripId, uint256 _startTime, uint256 _value, address bitkubNext_
   ) external nonReentrant {
+    uint256 minPayValue = MIN_PAY_VALUE * 10 ** IKAP20(token).decimals();
+    uint256 maxPayValue = MAX_PAY_VALUE * 10 ** IKAP20(token).decimals();
+
     require(trips[_tripId].initiator == address(0), "Trip already started");
-    require(_value >= MIN_PAY_VALUE && _value <= MAX_PAY_VALUE, "Invalid value");
+    require(_value >= minPayValue && _value <= maxPayValue, "Invalid value");
 
     IKAP20(token).transferFrom(msg.sender, address(this), _value);
 
