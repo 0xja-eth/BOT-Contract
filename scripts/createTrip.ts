@@ -12,12 +12,14 @@ export async function main(hre: HardhatRuntimeEnvironment) {
   const [token] = await makeContract("TestToken")
   const [platform] = await makeContract("BOTPlatform");
 
-  const tripId = "123";
-  const startTime = Math.floor(Date.now() / 1000);
+  const tripId = Buffer.from("trip1");
+  const startTime = new Date("2024-11-15 20:30").getTime();
+  const endTime = new Date("2024-11-15 20:32").getTime();
   const value = parseEther("3");
 
   await sendTx(token.approve(platform.address, value), "approve");
   await sendTx(platform.startTrip(tripId, startTime, value), "startTrip");
+  await sendTx(platform.estimateTrip(tripId, endTime), "estimateTrip");
 }
 
 main(hre).catch((error) => {

@@ -5,7 +5,12 @@
     "test": "npx hardhat test",
     "flat": "npx hardhat flatten src/BOTPlatform.sol > temp/flattened/LazyBet.sol",
     "flat-factory": "npx hardhat flatten src/LazyBetFactory.sol > temp/flattened/LazyBetFactory.sol",
-    "deploy": "npx hardhat run scripts/deploy.ts --no-compile"
+
+    "deploy": "npx hardhat run scripts/deploy.ts --no-compile",
+    "createTrip": "npx hardhat run scripts/createTrip.ts --no-compile",
+    "deposit": "npx hardhat run scripts/deposit.ts --no-compile",
+    "setupVerifier": "npx hardhat run scripts/setupVerifier.ts --no-compile",
+    "verifyEmail": "npx hardhat run scripts/verifyEmail.ts --no-compile"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.7",

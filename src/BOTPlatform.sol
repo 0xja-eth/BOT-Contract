@@ -33,6 +33,8 @@ contract BOTPlatform is ReentrancyGuard, Ownable {
   uint256 constant public MIN_PAY_VALUE = 1 ether;
   uint256 constant public MAX_PAY_VALUE = 30 ether;
 
+  uint256 constant public INVALID_THRESHOLD = 10 minutes;
+
   struct Tier {
     uint256 minDelay; // minute
     uint256 maxDelay; // minute
@@ -41,9 +43,9 @@ contract BOTPlatform is ReentrancyGuard, Ownable {
 
   Tier[] public tiers;
 
-  mapping(bytes => Trip) public trips; // Trip ID -> Trip
+  mapping(string => Trip) public trips; // Trip ID -> Trip
 
-  mapping(address => bytes) public currentTrips; // User -> Trip ID
+  mapping(address => string) public currentTrips; // User -> Trip ID
   mapping(string => address) public emails; // Email -> Address
 
   mapping(address => uint256) public claimable; // User -> Claimable Balance
@@ -88,8 +90,8 @@ contract BOTPlatform is ReentrancyGuard, Ownable {
   }
 
   function startTrip(
-    bytes memory _tripId, uint256 _startTime, uint256 _value
-  ) public nonReentrant {
+    string memory _tripId, uint256 _startTime, uint256 _value, address bitkubNext_
+  ) external nonReentrant {
     require(trips[_tripId].initiator == address(0), "Trip already started");
     require(_value >= MIN_PAY_VALUE && _value <= MAX_PAY_VALUE, "Invalid value");
 
@@ -108,7 +110,8 @@ contract BOTPlatform is ReentrancyGuard, Ownable {
     currentTrips[msg.sender] = _tripId;
   }
 
-  function estimateTrip(bytes memory _tripId, uint256 _estEndTime) public onlyEstimator {
+  function estimateTrip(string memory _tripId, uint256 _estEndTime) public onlyEstimator {
+    require(trips[_tripId].initiator != address(0), "Trip not existed");
     require(trips[_tripId].status == TripStatus.Pending, "Trip already completed or cancelled");
     require(trips[_tripId].estEndTime == 0, "Estimated end time already set");
 
@@ -118,7 +121,8 @@ contract BOTPlatform is ReentrancyGuard, Ownable {
     trips[_tripId].estEndTime = _estEndTime;
   }
 
-  function completeTrip(bytes memory _tripId, uint256 _actStartTime, uint256 _actEndTime) external onlyVerifier {
+  function completeTrip(string memory _tripId, uint256 _actStartTime, uint256 _actEndTime) external onlyVerifier {
+    require(trips[_tripId].initiator != address(0), "Trip not existed");
     require(trips[_tripId].status == TripStatus.Pending, "Trip already completed or cancelled");
     require(trips[_tripId].actStartTime == 0, "Actual start time already set");
     require(trips[_tripId].actEndTime == 0, "Actual end time already set");
@@ -126,16 +130,22 @@ contract BOTPlatform is ReentrancyGuard, Ownable {
     trips[_tripId].actStartTime = _actStartTime;
     trips[_tripId].actEndTime = _actEndTime;
 
+    if ((_actStartTime > trips[_tripId].startTime && _actStartTime - trips[_tripId].startTime >= INVALID_THRESHOLD) ||
+        (_actStartTime < trips[_tripId].startTime && trips[_tripId].startTime - _actStartTime >= INVALID_THRESHOLD)) {
+      trips[_tripId].status = TripStatus.Cancelled; // Cancelled due to late start
+      return;
+    }
+
     uint256 actDuration = _actEndTime - _actStartTime;
     uint256 estDuration = trips[_tripId].estEndTime - trips[_tripId].startTime;
 
     if (actDuration <= estDuration) {
-      trips[_tripId].status = TripStatus.Cancelled;
+      trips[_tripId].status = TripStatus.Completed;
       return;
     }
 
     uint256 deltaDuration = actDuration - estDuration; // In seconds
-    uint256 deltaDurationMinutes = deltaDuration / 60; // In minutes
+    uint256 deltaDurationMinutes = deltaDuration / 1 minutes; // In minutes
 
     require(deltaDurationMinutes <= MAX_DELAY, "Invalid delay");
 
@@ -153,7 +163,7 @@ contract BOTPlatform is ReentrancyGuard, Ownable {
     trips[_tripId].status = TripStatus.Completed;
   }
 
-  function claim() public nonReentrant {
+  function claim(address bitkubNext_) public nonReentrant {
     require(claimable[msg.sender] > 0, "No claimable balance");
 
     claimable[msg.sender] = 0;

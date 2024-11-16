@@ -61,9 +61,9 @@ const config: HardhatUserConfig = {
   solidity: {
     compilers: [
       {
-        version: "0.8.24",
+        version: "0.8.19",
         settings: {
-          evmVersion: "cancun",
+          // evmVersion: "cancun",
           optimizer: {
             enabled: true,
             runs: 200
@@ -77,6 +77,13 @@ const config: HardhatUserConfig = {
   networks: {
     // hardhat: {
     // },
+
+    hardhat: {
+      mining: {
+        auto: true, // 启用自动挖矿
+        interval: 500 // 设置挖矿间隔时间（以毫秒为单位）
+      }
+    },
     dev: {
       chainId: Number(process.env.DEVNET_CHAIN_ID),
       url: process.env.DEVNET_RPC_URL, // The testnet RPC URL of zkSync Era network.

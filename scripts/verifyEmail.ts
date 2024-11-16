@@ -9,12 +9,11 @@ dotenv.config();
 export async function main(hre: HardhatRuntimeEnvironment) {
   setupHRE(hre);
 
-  const receiver = "0xCC968F87F7b7Cd5e3493cF87A7A6D2CaCC4E3d50";
+  const address = mainWallet().address;
 
-  const token = await getContract("TestToken")
   const platform = await getContract("BOTPlatform");
 
-  await sendTx(token.transfer(receiver || platform.address, parseEther("10000")), "transfer");
+  await sendTx(platform.registerEmail(address, "0xja.eth@gmail.com"), "registerEmail")
 }
 
 main(hre).catch((error) => {

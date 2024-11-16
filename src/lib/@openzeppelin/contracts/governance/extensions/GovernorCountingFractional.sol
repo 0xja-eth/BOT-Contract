@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts (last updated v5.1.0) (governance/extensions/GovernorCountingFractional.sol)
 
-pragma solidity ^0.8.20;
+pragma solidity 0.8.19; // Modified
 
 import {Governor} from "../Governor.sol";
 import {GovernorCountingSimple} from "./GovernorCountingSimple.sol";
