@@ -1,16 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
+import "./lib/@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./lib/@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./lib/@openzeppelin/contracts/access/Ownable.sol";
-
-interface IERC20 {
-  function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
-  function transfer(address recipient, uint256 amount) external returns (bool);
-  function balanceOf(address account) external view returns (uint256);
-  function allowance(address _owner, address _spender) external view returns (uint256);
-  function approve(address _spender, uint _value) external returns (bool success);
-}
 
 enum TripStatus { Pending, Completed, Cancelled }
 
@@ -20,6 +13,8 @@ struct Trip {
 
   uint256 startTime; // Trip start time
   uint256 estEndTime; // Trip estimated end time
+
+  uint256 actStartTime; // Trip actual start time
   uint256 actEndTime; // Trip actual end time
 
   TripStatus status;
@@ -27,15 +22,21 @@ struct Trip {
 
 contract BOTPlatform is ReentrancyGuard, Ownable {
 
+  address public token; // USDC
+
   address public estimator;
   address public verifier;
 
   uint256 constant public FEE_FACTOR = 10000;
+  uint256 constant public MAX_DELAY = 99999;
+
+  uint256 constant public MIN_PAY_VALUE = 1 ether;
+  uint256 constant public MAX_PAY_VALUE = 30 ether;
 
   struct Tier {
-    uint256 min;
-    uint256 max;
-    uint256 feeBps;
+    uint256 minDelay; // minute
+    uint256 maxDelay; // minute
+    uint256 rewardBps;
   }
 
   Tier[] public tiers;
@@ -44,6 +45,8 @@ contract BOTPlatform is ReentrancyGuard, Ownable {
 
   mapping(address => bytes) public currentTrips; // User -> Trip ID
   mapping(string => address) public emails; // Email -> Address
+
+  mapping(address => uint256) public claimable; // User -> Claimable Balance
 
   modifier onlyEstimator() {
     require(msg.sender == estimator, "Unauthorized");
@@ -55,9 +58,9 @@ contract BOTPlatform is ReentrancyGuard, Ownable {
   }
 
   constructor() Ownable(msg.sender) {
-    changeTier(0, Tier({ min: 0, max: 10, feeBps: 1000 }));
-    changeTier(1, Tier({ min: 10, max: 20, fee: 2000 }));
-    changeTier(2, Tier({ min: 20, max: 999, fee: 3000 }));
+    changeTier(0, Tier(0, 10, 1000));
+    changeTier(1, Tier(10, 30, 3000));
+    changeTier(2, Tier(30, MAX_DELAY, 10000));
   }
 
   function changeTier(uint256 _index, Tier memory _tier) public onlyOwner {
@@ -70,6 +73,9 @@ contract BOTPlatform is ReentrancyGuard, Ownable {
     }
   }
 
+  function changeToken(address _token) public onlyOwner {
+    token = _token;
+  }
   function changeEstimator(address _estimator) public onlyOwner {
     estimator = _estimator;
   }
@@ -82,16 +88,19 @@ contract BOTPlatform is ReentrancyGuard, Ownable {
   }
 
   function startTrip(
-    bytes memory _tripId, uint256 _startTime
-  ) public payable nonReentrant {
+    bytes memory _tripId, uint256 _startTime, uint256 _value
+  ) public nonReentrant {
     require(trips[_tripId].initiator == address(0), "Trip already started");
-    require(msg.value > 0, "Invalid value");
+    require(_value >= MIN_PAY_VALUE && _value <= MAX_PAY_VALUE, "Invalid value");
+
+    IERC20(token).transferFrom(msg.sender, address(this), _value);
 
     trips[_tripId] = Trip({
       initiator: msg.sender,
-      value: msg.value,
+      value: _value,
       startTime: _startTime,
       estEndTime: 0,
+      actStartTime: 0,
       actEndTime: 0,
       status: TripStatus.Pending
     });
@@ -109,7 +118,50 @@ contract BOTPlatform is ReentrancyGuard, Ownable {
     trips[_tripId].estEndTime = _estEndTime;
   }
 
-  function completeTrip(bytes memory _tripId) external onlyVerifier {
+  function completeTrip(bytes memory _tripId, uint256 _actStartTime, uint256 _actEndTime) external onlyVerifier {
+    require(trips[_tripId].status == TripStatus.Pending, "Trip already completed or cancelled");
+    require(trips[_tripId].actStartTime == 0, "Actual start time already set");
+    require(trips[_tripId].actEndTime == 0, "Actual end time already set");
 
+    trips[_tripId].actStartTime = _actStartTime;
+    trips[_tripId].actEndTime = _actEndTime;
+
+    uint256 actDuration = _actEndTime - _actStartTime;
+    uint256 estDuration = trips[_tripId].estEndTime - trips[_tripId].startTime;
+
+    if (actDuration <= estDuration) {
+      trips[_tripId].status = TripStatus.Cancelled;
+      return;
+    }
+
+    uint256 deltaDuration = actDuration - estDuration; // In seconds
+    uint256 deltaDurationMinutes = deltaDuration / 60; // In minutes
+
+    require(deltaDurationMinutes <= MAX_DELAY, "Invalid delay");
+
+    // Find tier
+    for (uint256 i = 0; i < tiers.length; i++) {
+      if (deltaDurationMinutes >= tiers[i].minDelay && deltaDurationMinutes < tiers[i].maxDelay) {
+        uint256 fee = trips[_tripId].value * tiers[i].rewardBps / FEE_FACTOR;
+        uint256 amount = trips[_tripId].value + fee;
+
+        claimable[trips[_tripId].initiator] += amount;
+        break;
+      }
+    }
+
+    trips[_tripId].status = TripStatus.Completed;
+  }
+
+  function claim() public nonReentrant {
+    require(claimable[msg.sender] > 0, "No claimable balance");
+
+    claimable[msg.sender] = 0;
+
+    IERC20(token).transfer(msg.sender, claimable[msg.sender]);
+  }
+
+  function withdraw(address receiver) public onlyOwner {
+    IERC20(token).transfer(receiver, IERC20(token).balanceOf(address(this)));
   }
 }
