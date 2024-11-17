@@ -9,7 +9,7 @@ dotenv.config();
 export async function main(hre: HardhatRuntimeEnvironment) {
   setupHRE(hre);
 
-  const verifierAddress = "0x3daa70229451fde0117cdbff97b7a91babae030d";
+  const verifierAddress = "0x6e18cef18cbf6ceb96a52ab71f5330c4f312cf47";
 
   const [platform] = await makeContract("BOTPlatform");
 

@@ -349,11 +349,11 @@ contract KAP20 is IKAP20, IKToken, Pausable, AccessController {
   ) public virtual override whenNotPaused returns (bool) {
     _transfer(sender, recipient, amount);
 
-    uint256 currentAllowance = _allowances[sender][msg.sender];
-    require(currentAllowance >= amount, "KAP20: transfer amount exceeds allowance");
-  unchecked {
-    _approve(sender, msg.sender, currentAllowance - amount);
-  }
+//    uint256 currentAllowance = _allowances[sender][msg.sender];
+//    require(currentAllowance >= amount, "KAP20: transfer amount exceeds allowance");
+//  unchecked {
+//    _approve(sender, msg.sender, currentAllowance - amount);
+//  }
 
     return true;
   }

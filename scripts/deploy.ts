@@ -11,8 +11,8 @@ export async function deploy(hre: HardhatRuntimeEnvironment) {
 
   const address = mainWallet().address;
 
-  const [token] = await makeContract("TestToken", [
-    "TestToken", "TT", "BOT", 6,
+  const [token] = await makeContract("TestToken", "USDC", [
+    "USD Coin", "USDC", "BOT", 6,
     "0x99166455989a868d5151799c716B3c1Be95D5114",
     "0x0Fe7773B44b2CFE4C9778616Db526359Ccda16bE",
     address,
@@ -21,8 +21,9 @@ export async function deploy(hre: HardhatRuntimeEnvironment) {
   ])
   const [platform] = await makeContract("BOTPlatform");
 
-  // await sendTx(token.mint(address, parseUnits("1000000", 6)), "mint");
-  // await sendTx(token.mint("0xdE729290Fa6F72Dc9B802bB7CF12dad3f095da8d", parseUnits("1000000", 6)), "mint");
+  await sendTx(token.mint(address, parseUnits("10000000000", 6)), "mint");
+  await sendTx(token.mint("0xdE729290Fa6F72Dc9B802bB7CF12dad3f095da8d", parseUnits("100000", 6)), "mint");
+  await sendTx(token.mint("0xd0dD493E589B572365de10988C4d1F9E85a8B37a", parseUnits("100000", 6)), "mint");
 
   await sendTx(platform.changeToken(token.address), "changeToken");
   await sendTx(platform.changeEstimator(address), "changeEstimator");

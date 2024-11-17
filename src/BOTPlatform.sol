@@ -101,10 +101,10 @@ contract BOTPlatform is ReentrancyGuard, Ownable {
     require(trips[_tripId].initiator == address(0), "Trip already started");
     require(_value >= minPayValue && _value <= maxPayValue, "Invalid value");
 
-    IKAP20(token).transferFrom(msg.sender, address(this), _value);
+    IKAP20(token).transferFrom(bitkubNext_, address(this), _value);
 
     trips[_tripId] = Trip({
-      initiator: msg.sender,
+      initiator: bitkubNext_,
       value: _value,
       startTime: _startTime,
       estEndTime: 0,
@@ -113,7 +113,7 @@ contract BOTPlatform is ReentrancyGuard, Ownable {
       status: TripStatus.Pending
     });
 
-    currentTrips[msg.sender] = _tripId;
+    currentTrips[bitkubNext_] = _tripId;
   }
 
   function estimateTrip(string memory _tripId, uint256 _estEndTime) public onlyEstimator {
@@ -170,11 +170,11 @@ contract BOTPlatform is ReentrancyGuard, Ownable {
   }
 
   function claim(address bitkubNext_) public nonReentrant {
-    require(claimable[msg.sender] > 0, "No claimable balance");
+    require(claimable[bitkubNext_] > 0, "No claimable balance");
 
-    claimable[msg.sender] = 0;
+    claimable[bitkubNext_] = 0;
 
-    IKAP20(token).transfer(msg.sender, claimable[msg.sender]);
+    IKAP20(token).transfer(bitkubNext_, claimable[bitkubNext_]);
   }
 
   function withdraw(address receiver) public onlyOwner {
